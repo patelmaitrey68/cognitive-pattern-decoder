@@ -1,0 +1,53 @@
+{
+  "name": "cognitive-decoder",
+  "displayName": "Cognitive Coding Decoder",
+  "description": "VS Code extension to collect cognitive coding behavior",
+  "version": "0.0.6",
+  "publisher": "maitreypatel",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+  "onCommand:cognitiveDecoder.login",
+  "onCommand:cognitiveDecoder.selectProject",
+  "onCommand:cognitiveDecoder.endSession"
+  ]
+,
+  "contributes": {
+  "commands": [
+    {
+      "command": "cognitiveDecoder.login",
+      "title": "Cognitive Decoder: Login"
+    },
+    {
+      "command": "cognitiveDecoder.selectProject",
+      "title": "Cognitive Decoder: Select Project"
+    },
+    {
+      "command": "cognitiveDecoder.endSession",
+      "title": "Cognitive Decoder: End Session"
+    }
+  ],
+
+  "configuration": {
+      "title": "Cognitive Decoder",
+      "properties": {
+        "cognitiveDecoder.backendUrl": {
+          "type": "string",
+          "default": "https://projectional-feasibly-santo.ngrok-free.dev",
+          "description": "Backend API base URL (use ngrok URL when needed)"
+        }
+      }
+    }
+}
+,
+  "scripts": {
+    "compile": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0"
+  }
+}
