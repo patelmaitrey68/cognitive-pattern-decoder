@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 
 function getBackendUrl(): string {
   const config = vscode.workspace.getConfiguration("cognitiveDecoder");
-  return config.get<string>("backendUrl", "http://localhost:8080");
+  return config.get<string>("backendUrl", "https://cognitive-backend-2cs1.onrender.com");
 }
 
 const BASE_URL = getBackendUrl();

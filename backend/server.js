@@ -15,7 +15,7 @@ const historyRoutes = require("./routes/history.routes");
 const analysisRoutes = require("./routes/analysis.routes");
 const app = express();
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: true,
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -26,8 +26,9 @@ app.set("trust proxy", 1);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    methods: ["GET", "POST"]
+    origin: true,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
