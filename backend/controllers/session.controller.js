@@ -106,8 +106,9 @@ exports.endSession = async (req, res) => {
     if (!session)
       return res.status(404).json({ msg: "Session not found" });
 
-    // Call Python ML Service
-    const mlResponse = await axios.post("http://localhost:8000/predict", {
+    // Call Python ML Service using env variable
+    const mlUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
+    const mlResponse = await axios.post(`${mlUrl}/predict`, {
       typingSpeed: session.typingSpeed,
       typedChars: session.typedChars,
       backspaceCount: session.backspaceCount,
