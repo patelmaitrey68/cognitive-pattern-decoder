@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════
+   BASE RESET & ROOT
+════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 72px;
+  --topbar-height: 64px;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+  background: #040814;
+  color: #f0f4ff;
+}
+
+/* ═══════════════════════════════════════════════
+   CUSTOM SCROLLBAR
+════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1a2744; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+/* ═══════════════════════════════════════════════
+   GLASS CARD UTILITY
+════════════════════════════════════════════════ */
+@layer components {
+  .glass-card {
+    @apply bg-cardBg border border-cardBorder rounded-xl2 shadow-card;
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Metric card glow highlight */
+  .metric-card {
+    @apply glass-card p-5 transition-all duration-300;
+  }
+  .metric-card:hover {
+    @apply shadow-glow border-accent/30;
+    transform: translateY(-2px);
+  }
+
+  /* Navigation item */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium
+           text-textSecondary transition-all duration-200 cursor-pointer;
+  }
+  .nav-item:hover {
+    @apply bg-white/5 text-textPrimary;
+  }
+  .nav-item.active {
+    @apply bg-accent/15 text-accent;
+    box-shadow: inset 3px 0 0 #3b82f6;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply bg-accent hover:bg-accentHover text-white font-semibold px-5 py-2.5
+           rounded-lg transition-all duration-200 shadow-glowSm;
+  }
+  .btn-primary:hover { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
+  .btn-ghost {
+    @apply border border-cardBorder text-textSecondary hover:text-textPrimary
+           hover:border-accent/40 px-5 py-2.5 rounded-lg transition-all duration-200;
+  }
+
+  /* Form input */
+  .input-field {
+    @apply w-full bg-darkBg border border-cardBorder text-textPrimary placeholder-textMuted
+           rounded-lg px-4 py-3 text-sm outline-none transition-all duration-200;
+  }
+  .input-field:focus {
+    @apply border-accent;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+
+  /* Page section heading */
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-textMuted mb-4;
+  }
+
+  /* Status badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+  .badge-blue  { @apply bg-accent/15 text-accentLight; }
+  .badge-green { @apply bg-success/15 text-success; }
+  .badge-amber { @apply bg-warning/15 text-warning; }
+
+  /* Table styles */
+  .cpd-table { @apply w-full text-sm; }
+  .cpd-table thead tr { @apply border-b border-cardBorder; }
+  .cpd-table th { @apply py-3 px-4 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider; }
+  .cpd-table td { @apply py-3.5 px-4 text-textPrimary border-b border-cardBorder/50; }
+  .cpd-table tbody tr { @apply transition-colors duration-150 hover:bg-white/[0.03]; }
+
+  /* Progress bar */
+  .progress-bar {
+    @apply h-2 rounded-full bg-cardBorder overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+
+  /* Page layout */
+  .page-shell {
+    @apply p-6 min-h-screen;
+    background: linear-gradient(135deg, #040814 0%, #070d1a 100%);
+  }
+  .page-title {
+    @apply text-2xl font-bold text-textPrimary;
+  }
+  .page-subtitle {
+    @apply text-sm text-textSecondary mt-1;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATED GLOW PULSE
+════════════════════════════════════════════════ */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+.glow-pulse { animation: glow-pulse 2.5s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════════════
+   SLIDE-IN ANIMATION
+════════════════════════════════════════════════ */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-up { animation: slide-up 0.35s ease-out forwards; }
