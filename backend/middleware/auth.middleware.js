@@ -14,6 +14,9 @@ module.exports = (req, res, next) => {
     req.user = decoded; // { userId }
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "TokenExpired", message: "Access token has expired." });
+    }
     return res.status(401).json({ error: "Invalid token" });
   }
 };

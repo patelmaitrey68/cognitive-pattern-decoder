@@ -5,24 +5,37 @@ const MLResult = require("../models/MLResult.model");
 const Session = require("../models/Session.model");
 
 
-// REGISTER
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
+  const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET, { expiresIn: "30d" });
+  return { accessToken, refreshToken };
+};
+
+// REGISTER — auto-login by returning token + user
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(409).json({ message: "Email already in use" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, passwordHash: hashedPassword });
 
-    const user = new User({
-      email,
-      passwordHash: hashedPassword
-    });
-
+    const { accessToken, refreshToken } = generateTokens(user._id);
+    user.refreshTokens = [refreshToken];
     await user.save();
-    console.log("User registered:", user);
 
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) { console.log(error);
-    res.status(500).json({ error: "Registration failed" });
+    res.status(201).json({
+      token: accessToken, // Keeping 'token' for backwards compatibility
+      refreshToken,
+      user: { _id: user._id, name: user.name, email: user.email }
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ message: "Registration failed. Please try again." });
   }
 };
 
@@ -33,24 +46,77 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid email or password." });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    // 🔐 JWT TOKEN
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const { accessToken, refreshToken } = generateTokens(user._id);
+    
+    // Add the new refresh token to the user's array
+    if (!user.refreshTokens) user.refreshTokens = [];
+    user.refreshTokens.push(refreshToken);
+    await user.save();
 
-    res.json({ token });
+    res.json({
+      token: accessToken, // Keeping 'token' for backwards compatibility
+      refreshToken,
+      user: { _id: user._id, name: user.name, email: user.email }
+    });
   } catch (error) {
-    res.status(500).json({ error: "Login failed" });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Login failed. Please try again." });
+  }
+};
+
+// REFRESH TOKEN
+exports.refreshToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) return res.status(401).json({ message: "Refresh token is required." });
+
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user || !user.refreshTokens.includes(token)) {
+      return res.status(403).json({ message: "Invalid refresh token." });
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
+
+    // Refresh token rotation
+    user.refreshTokens = user.refreshTokens.filter(t => t !== token);
+    user.refreshTokens.push(newRefreshToken);
+    await user.save();
+
+    res.json({ token: accessToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(403).json({ message: "Invalid or expired refresh token." });
+  }
+};
+
+// LOGOUT
+exports.logout = async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) return res.status(400).json({ message: "Refresh token is required." });
+
+    const user = await User.findOne({ refreshTokens: token });
+    if (user) {
+      user.refreshTokens = user.refreshTokens.filter(t => t !== token);
+      await user.save();
+    }
+
+    res.json({ message: "Logged out successfully." });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Logout failed." });
   }
 };
 // 🔍 Compare a user with overall averages
@@ -104,5 +170,41 @@ exports.compareUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to compare user" });
+  }
+};
+exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+
+    if (req.body.settings) {
+      const newSettings = typeof req.body.settings === 'string' 
+        ? JSON.parse(req.body.settings) 
+        : req.body.settings;
+      
+      user.settings = {
+        ...user.settings,
+        ...newSettings
+      };
+    }
+
+    if (req.file) {
+      user.profileImage = `/uploads/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    res.json({
+      name: user.name,
+      email: user.email,
+      profileImage: user.profileImage,
+      settings: user.settings
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update profile" });
   }
 };

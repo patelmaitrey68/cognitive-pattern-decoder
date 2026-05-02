@@ -72,3 +72,34 @@ exports.getProjectsByUser = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch projects" });
   }
 };
+
+// ===============================
+// PROJECT ACTIVITY
+// ===============================
+exports.getActivity = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const sessions = await Session.find({ projectId });
+    const mlResults = await MLResult.find({ projectId });
+
+    const sessionCount = sessions.length;
+
+    const clusterCounts = {};
+    mlResults.forEach(r => {
+      clusterCounts[r.cluster] =
+        (clusterCounts[r.cluster] || 0) + 1;
+    });
+
+    res.json({
+      sessionCount,
+      clusterCounts
+    });
+
+  } catch (error) {
+    console.error("Project activity error:", error);
+    res.status(500).json({
+      error: "Failed to fetch project activity"
+    });
+  }
+};
