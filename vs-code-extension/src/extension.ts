@@ -3,7 +3,8 @@ import { io, Socket } from "socket.io-client";
 
 function getBackendUrl(): string {
   const config = vscode.workspace.getConfiguration("cognitiveDecoder");
-  return config.get<string>("backendUrl", "https://cognitive-backend-2cs1.onrender.com");
+  const url = config.get<string>("backendUrl", "https://cognitive-backend-2cs1.onrender.com");
+  return url.trim();
 }
 
 const BASE_URL = getBackendUrl();
@@ -135,8 +136,8 @@ export function activate(context: vscode.ExtensionContext) {
 
         connectSocket(authToken);
         vscode.window.showInformationMessage("Login successful");
-      } catch (error) {
-        vscode.window.showErrorMessage("Cannot connect to backend");
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Cannot connect to backend: ${error.message || error}`);
       }
     }
   );

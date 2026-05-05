@@ -39,7 +39,8 @@ const vscode = __importStar(require("vscode"));
 const socket_io_client_1 = require("socket.io-client");
 function getBackendUrl() {
     const config = vscode.workspace.getConfiguration("cognitiveDecoder");
-    return config.get("backendUrl", "http://localhost:8080");
+    const url = config.get("backendUrl", "https://cognitive-backend-2cs1.onrender.com");
+    return url.trim();
 }
 const BASE_URL = getBackendUrl();
 /* =====================
@@ -145,7 +146,7 @@ function activate(context) {
             vscode.window.showInformationMessage("Login successful");
         }
         catch (error) {
-            vscode.window.showErrorMessage("Cannot connect to backend");
+            vscode.window.showErrorMessage(`Cannot connect to backend: ${error.message || error}`);
         }
     });
     context.subscriptions.push(loginCommand);

@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   Bell,
   Users,
+  Download,
 } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
 
@@ -98,6 +99,16 @@ export default function Sidebar() {
 
       {/* Bottom actions */}
       <div className="px-2 pb-4 space-y-0.5 border-t border-cardBorder pt-3">
+        <a
+          href="/cognitive-decoder-0.0.8.vsix"
+          download
+          className={`nav-item w-full text-accent hover:bg-accent/10 hover:text-accent mb-2 ${collapsed ? "justify-center px-2" : ""}`}
+          title={collapsed ? "Download Extension" : undefined}
+        >
+          <Download size={18} className="flex-shrink-0" />
+          {!collapsed && <span>Download Extension</span>}
+        </a>
+
         <button
           onClick={handleLogout}
           className={`nav-item w-full text-danger hover:bg-danger/10 hover:text-danger ${collapsed ? "justify-center px-2" : ""}`}
